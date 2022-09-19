@@ -2,34 +2,40 @@ import request from './request.js'
 
 class Controller {
   #tableName = ''
-  #controllerUrl = ''
+  #controllerURL = ''
   #headers = {}
   constructor(name, baseUrl, headers) {
+    name = name + ""
     if (name.startsWith('/')) {
       name = name.substr(1)
     }
     this.#headers = headers ?? {}
     this.#tableName = name
-    this.#controllerUrl = new URL(name, baseUrl).href
-
+    this.#controllerURL = new URL(name, baseUrl).href
   }
   get headers() {
     return this.#headers
   }
-  get controllerUrl() {
-    return this.#controllerUrl
+  get controllerURL() {
+    return this.#controllerURL
+  }
+  id(id) {
+    return createController(id, this.controllerURL + "/", this.headers)
+  }
+  path(path) {
+    return createController(path, this.controllerURL + "/", this.headers)
   }
   /**
    * id可以是一个id，或者为空，或者一个查询
    * @param {*} id
    */
   async get(id) {
-    let url = `${this.controllerUrl}`
+    let url = `${this.controllerURL}`
     let data = null
     if (typeof id == 'object') {
       data = id
     } else if (id != null) {
-      url = `${this.controllerUrl}/${id}`
+      url = `${this.controllerURL}/${id}`
     }
 
     return request.get(url, data, this.headers)
@@ -39,7 +45,7 @@ class Controller {
    * @param {*} item
    */
   async post(item) {
-    return request.post(this.controllerUrl, item, this.headers)
+    return request.post(this.controllerURL, item, this.headers)
   }
 
   /**
@@ -51,7 +57,7 @@ class Controller {
     if (item == undefined) {
       throw new Error('参数数量不对')
     }
-    return request.put(`${this.controllerUrl}/${id}`, item, this.headers)
+    return request.put(`${this.controllerURL}/${id}`, item, this.headers)
   }
 
   /**
@@ -63,7 +69,7 @@ class Controller {
     if (item == undefined) {
       throw new Error('参数数量不对')
     }
-    return request.patch(`${this.controllerUrl}/${id}`, item, this.headers)
+    return request.patch(`${this.controllerURL}/${id}`, item, this.headers)
   }
 
   /**
@@ -71,14 +77,14 @@ class Controller {
    * @param {*} id
    */
   async delete(id) {
-    let url = `${this.controllerUrl}`
+    let url = `${this.controllerURL}`
     let data = null
     if (id instanceof Array) {
-      url = `${this.controllerUrl}/${id.join(',')}`
+      url = `${this.controllerURL}/${id.join(',')}`
     } else if (typeof id == 'object') {
       data = id
     } else {
-      url = `${this.controllerUrl}/${id}`
+      url = `${this.controllerURL}/${id}`
     }
 
     return request.delete(url, data, this.headers)
@@ -99,12 +105,10 @@ const handler = {
     if (match) {
       let [first, ...rest] = match.groups.name
       let name = [first.toLowerCase(), ...rest].join('')
-      let controller = new Controller(name, target.controllerUrl + '/', target.headers)
+      let controller = new Controller(name, target.controllerURL + '/', target.headers)
       return controller[match.groups.action].bind(controller)
     }
-
-
-    return new Proxy(new Controller(property, target.controllerUrl + '/', target.headers), handler)
+    return createController(property, target.controllerURL + '/', target.headers)
   }
 }
 export const createController = (name, baseUrl, headers) => {

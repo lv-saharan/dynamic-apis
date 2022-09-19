@@ -64,9 +64,35 @@
       "title": "dynamic api",
       "author": "saharan",
       "id": 14
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 15
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 16
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "body": "some comment!!!",
+      "postId": "2",
+      "id": 1
+    },
+    {
+      "body": "some comment!!!",
+      "postId": "2",
+      "id": 2
+    },
+    {
+      "body": "some comment!!!",
+      "postId": "2",
+      "id": 3
+    }
+  ],
   "profile": {
     "name": "typicode"
   }
