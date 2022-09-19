@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dynamic apis</title>
+    <style>
+        #result {
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+    <script type="module">
+        import { createController } from '../src/index.js'
+        const baseURL = 'http://127.0.0.1:3000/'
+        const postCtrler = createController("posts", baseURL)
+        const $result = document.querySelector("#result")
+        document.querySelector("#getPost").addEventListener("click", async (evt) => {
+            let posts = await postCtrler.get()
+            $result.value = JSON.stringify(posts)
+        })
+        document.querySelector("#addPost").addEventListener("click", async (evt) => {
+            //live server will refresh....
+            $result.value = JSON.stringify(await postCtrler.add({
+                "title": "dynamic api",
+                "author": "saharan"
+            }))
+        })
+        document.querySelector("#delPost").addEventListener("click", async (evt) => {
+            //live server will refresh....
+            $result.value = JSON.stringify(await postCtrler.del(1))
+        })
+        document.querySelector("#updatePost").addEventListener("click", async (evt) => {
+            //live server will refresh....
+            $result.value = JSON.stringify(await postCtrler.update(2, {
+                "title": "！！！dynamic api",
+                "author": "！！！saharan"
+            }))
+        })
+    </script>
+</head>
+
+<body>
+
+    <button id="getPost">get posts</button>
+    <button id="addPost">add a post</button>
+    <button id="updatePost">update a post</button>
+
+    <button id="delPost">del a post</button>
+
+    <textarea id="result"></textarea>
+
+</body>
+
+</html>

@@ -1,0 +1,73 @@
+{
+  "posts": [
+    {
+      "title": "！！！dynamic api",
+      "author": "！！！saharan",
+      "id": 2
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 3
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 4
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 5
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 6
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 7
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 8
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 9
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 10
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 11
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 12
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 13
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 14
+    }
+  ],
+  "comments": [],
+  "profile": {
+    "name": "typicode"
+  }
+}

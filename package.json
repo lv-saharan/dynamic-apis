@@ -1,0 +1,29 @@
+{
+  "name": "dynamic-apis",
+  "version": "1.0.0",
+  "description": "dynamic apis ,use proxy to create restful controller.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "db": "json-server --watch examples/db.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lv-saharan/dynamic-apis.git"
+  },
+  "keywords": [
+    "api",
+    "controller",
+    "proxy",
+    "dynamic"
+  ],
+  "author": "lv-saharan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lv-saharan/dynamic-apis/issues"
+  },
+  "homepage": "https://github.com/lv-saharan/dynamic-apis#readme",
+  "devDependencies": {
+    "json-server": "^0.17.0"
+  }
+}
