@@ -15,8 +15,10 @@
     <script type="module">
         import { createController } from '../src/index.js'
         const baseURL = 'http://127.0.0.1:3000/'
-        const postCtrler = createController("posts", baseURL)
-       
+        let count=0;
+        const postCtrler = createController("posts", baseURL, () => {
+            return { "some-header": "header-value", "count-header": count++ };
+        });
         const $result = document.querySelector("#result")
         document.querySelector("#getPost").addEventListener("click", async (evt) => {
             let posts = await postCtrler.get()

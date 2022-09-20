@@ -17,6 +17,18 @@ import { createController } from "dynamic-apis";
 //使用json-server 测试
 const baseURL = "http://127.0.0.1:3000/";
 const postCtrler = createController("posts", baseURL);
+//with header
+const postCtrler = createController("posts", baseURL, {
+  "some-header": "header-value",
+});
+//dynamic header
+let count = 0;
+const postCtrler = createController("posts", baseURL, () => {
+  return { "some-header": "header-value", 
+           "count-header": count++,
+           "AuthToken":getToken()
+         };
+});
 ```
 
 ## get all
