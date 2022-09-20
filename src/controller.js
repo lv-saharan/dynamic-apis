@@ -32,10 +32,12 @@ class Controller {
   async get(id) {
     let url = `${this.controllerURL}`
     let data = null
-    if (typeof id == 'object') {
+    if (id instanceof Array) {
+      url = `${this.controllerURL}/${id.join(',')}`
+    } else if (typeof id == 'object') {
       data = id
-    } else if (id != null) {
-      url = `${this.controllerURL}/${id}`
+    } else if (arguments.length) {
+      url = `${this.controllerURL}/${[...arguments].join(',')}`
     }
 
     return request.get(url, data, this.headers)
@@ -83,8 +85,8 @@ class Controller {
       url = `${this.controllerURL}/${id.join(',')}`
     } else if (typeof id == 'object') {
       data = id
-    } else {
-      url = `${this.controllerURL}/${id}`
+    } else if (arguments.length) {
+      url = `${this.controllerURL}/${[...arguments].join(',')}`
     }
 
     return request.delete(url, data, this.headers)
