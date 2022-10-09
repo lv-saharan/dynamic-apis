@@ -30,18 +30,18 @@ class Controller {
     return this.#afterReceives
   }
   id(id) {
-    return createController(id, this.controllerURL + "/", this.headers, this.#beforeSends, this.#afterReceives)
+    return createController(id, this.controllerURL + "/", this.headers, this.beforeSends, this.afterReceives)
   }
   path(path) {
-    return createController(path, this.controllerURL + "/", this.headers, this.#beforeSends, this.#afterReceives)
+    return createController(path, this.controllerURL + "/", this.headers, this.beforeSends, this.afterReceives)
   }
   beforeSend(handler) {
     if (!handler) throw new Error("need a handler")
-    this.#beforeSends.push(handler)
+    this.beforeSends.push(handler)
   }
   afterReceive(handler) {
     if (!handler) throw new Error("need a handler")
-    this.#afterReceives.push(handler)
+    this.afterReceives.push(handler)
   }
   /**
    * id可以是一个id，或者为空，或者一个查询
@@ -58,11 +58,11 @@ class Controller {
       url = `${this.controllerURL}/${[...arguments].join(',')}`
     }
     const config = { url, data, headers: this.headers }
-    this.#beforeSends.forEach(handler => {
+    this.beforeSends.forEach(handler => {
       handler(config)
     })
     const result = await request.get(config.url, config.data, config.headers)
-    this.#afterReceives.forEach(handler => {
+    this.afterReceives.forEach(handler => {
       handler(result)
     })
     return result
@@ -73,11 +73,11 @@ class Controller {
    */
   async post(data) {
     const config = { url: this.controllerURL, data, headers: this.headers }
-    this.#beforeSends.forEach(handler => {
+    this.beforeSends.forEach(handler => {
       handler(config)
     })
     const result = await request.post(config.url, config.data, config.headers)
-    this.#afterReceives.forEach(handler => {
+    this.afterReceives.forEach(handler => {
       handler(result)
     })
     return result
@@ -93,11 +93,11 @@ class Controller {
       throw new Error('need data argument')
     }
     const config = { url: `${this.controllerURL}/${id}`, data, headers: this.headers }
-    this.#beforeSends.forEach(handler => {
+    this.beforeSends.forEach(handler => {
       handler(config)
     })
     const result = await request.put(config.url, config.data, config.headers)
-    this.#afterReceives.forEach(handler => {
+    this.afterReceives.forEach(handler => {
       handler(result)
     })
     return result
@@ -113,11 +113,11 @@ class Controller {
       throw new Error('need data argument')
     }
     const config = { url: `${this.controllerURL}/${id}`, data, headers: this.headers }
-    this.#beforeSends.forEach(handler => {
+    this.beforeSends.forEach(handler => {
       handler(config)
     })
     const result = await request.patch(config.url, config.data, config.headers)
-    this.#afterReceives.forEach(handler => {
+    this.afterReceives.forEach(handler => {
       handler(result)
     })
     return result
@@ -139,11 +139,11 @@ class Controller {
     }
 
     const config = { url, data, headers: this.headers }
-    this.#beforeSends.forEach(handler => {
+    this.beforeSends.forEach(handler => {
       handler(config)
     })
     const result = await request.delete(config.url, config.data, config.headers)
-    this.#afterReceives.forEach(handler => {
+    this.afterReceives.forEach(handler => {
       handler(result)
     })
     return result
