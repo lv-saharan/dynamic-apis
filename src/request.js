@@ -1,7 +1,14 @@
-export const createHeaders = (headers) => {
+export const createHeaders = (headers = {}) => {
+  headers = (typeof headers == "function" ? headers() : headers)
+  for (let p in headers) {
+    const value = headers[p]
+    if (typeof value === "function") {
+      headers[p] = value()
+    }
+  }
   return new Headers({
     "Content-Type": "application/json",
-    ...(typeof headers == "function" ? headers() : headers)
+    ...headers
   });
 }
 const buildParams = (searchParams, parentKey = "", params = {}) => {

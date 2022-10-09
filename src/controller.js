@@ -4,7 +4,9 @@ class Controller {
   #tableName = ''
   #controllerURL = ''
   #headers = {}
-  constructor(name, baseUrl, headers) {
+  #beforeSends = []
+  #afterReceives = []
+  constructor(name, baseUrl, headers, beforeSends, afterReceives) {
     name = name + ""
     if (name.startsWith('/')) {
       name = name.substr(1)
@@ -12,6 +14,8 @@ class Controller {
     this.#headers = headers ?? {}
     this.#tableName = name
     this.#controllerURL = new URL(name, baseUrl).href
+    if (beforeSends) this.#beforeSends = beforeSends
+    if (afterReceives) this.#afterReceives = afterReceives
   }
   get headers() {
     return this.#headers
@@ -19,11 +23,25 @@ class Controller {
   get controllerURL() {
     return this.#controllerURL
   }
+  get beforeSends() {
+    return this.#beforeSends
+  }
+  get afterReceives() {
+    return this.#afterReceives
+  }
   id(id) {
-    return createController(id, this.controllerURL + "/", this.headers)
+    return createController(id, this.controllerURL + "/", this.headers, this.#beforeSends, this.#afterReceives)
   }
   path(path) {
-    return createController(path, this.controllerURL + "/", this.headers)
+    return createController(path, this.controllerURL + "/", this.headers, this.#beforeSends, this.#afterReceives)
+  }
+  beforeSend(handler) {
+    if (!handler) throw new Error("need a handler")
+    this.#beforeSends.push(handler)
+  }
+  afterReceive(handler) {
+    if (!handler) throw new Error("need a handler")
+    this.#afterReceives.push(handler)
   }
   /**
    * id可以是一个id，或者为空，或者一个查询
@@ -39,39 +57,70 @@ class Controller {
     } else if (arguments.length) {
       url = `${this.controllerURL}/${[...arguments].join(',')}`
     }
-
-    return request.get(url, data, this.headers)
+    const config = { url, data, headers: this.headers }
+    this.#beforeSends.forEach(handler => {
+      handler(config)
+    })
+    const result = await request.get(config.url, config.data, config.headers)
+    this.#afterReceives.forEach(handler => {
+      handler(result)
+    })
+    return result
   }
   /**
    * 新增
-   * @param {*} item
+   * @param {*} data
    */
-  async post(item) {
-    return request.post(this.controllerURL, item, this.headers)
+  async post(data) {
+    const config = { url: this.controllerURL, data, headers: this.headers }
+    this.#beforeSends.forEach(handler => {
+      handler(config)
+    })
+    const result = await request.post(config.url, config.data, config.headers)
+    this.#afterReceives.forEach(handler => {
+      handler(result)
+    })
+    return result
   }
 
   /**
-   * 更新全部
+   * update 
    * @param {*} id
-   * @param {*} item
+   * @param {*} data
    */
-  async put(id, item) {
-    if (item == undefined) {
-      throw new Error('参数数量不对')
+  async put(id, data) {
+    if (data == undefined) {
+      throw new Error('need data argument')
     }
-    return request.put(`${this.controllerURL}/${id}`, item, this.headers)
+    const config = { url: `${this.controllerURL}/${id}`, data, headers: this.headers }
+    this.#beforeSends.forEach(handler => {
+      handler(config)
+    })
+    const result = await request.put(config.url, config.data, config.headers)
+    this.#afterReceives.forEach(handler => {
+      handler(result)
+    })
+    return result
   }
 
   /**
-   * 更新部分
+   * patch
    * @param {*} id
-   * @param {*} item
+   * @param {*} data
    */
-  async patch(id, item) {
-    if (item == undefined) {
-      throw new Error('参数数量不对')
+  async patch(id, data) {
+    if (data == undefined) {
+      throw new Error('need data argument')
     }
-    return request.patch(`${this.controllerURL}/${id}`, item, this.headers)
+    const config = { url: `${this.controllerURL}/${id}`, data, headers: this.headers }
+    this.#beforeSends.forEach(handler => {
+      handler(config)
+    })
+    const result = await request.patch(config.url, config.data, config.headers)
+    this.#afterReceives.forEach(handler => {
+      handler(result)
+    })
+    return result
   }
 
   /**
@@ -89,8 +138,17 @@ class Controller {
       url = `${this.controllerURL}/${[...arguments].join(',')}`
     }
 
-    return request.delete(url, data, this.headers)
+    const config = { url, data, headers: this.headers }
+    this.#beforeSends.forEach(handler => {
+      handler(config)
+    })
+    const result = await request.delete(config.url, config.data, config.headers)
+    this.#afterReceives.forEach(handler => {
+      handler(result)
+    })
+    return result
   }
+
   add = this.post
   update = this.put
   modify = this.patch
@@ -107,14 +165,14 @@ const handler = {
     if (match) {
       let [first, ...rest] = match.groups.name
       let name = [first.toLowerCase(), ...rest].join('')
-      let controller = new Controller(name, target.controllerURL + '/', target.headers)
+      let controller = new Controller(name, target.controllerURL + '/', target.headers, target.beforeSends, target.afterReceives)
       return controller[match.groups.action].bind(controller)
     }
-    return createController(property, target.controllerURL + '/', target.headers)
+    return createController(property, target.controllerURL + '/', target.headers, target.beforeSends, target.afterReceives)
   }
 }
-export const createController = (name, baseUrl, headers) => {
-  return new Proxy(new Controller(name, baseUrl, headers), handler)
+export const createController = (name, baseUrl, headers, beforeSends, afterReceives) => {
+  return new Proxy(new Controller(name, baseUrl, headers, beforeSends, afterReceives), handler)
 }
 
 export default {
