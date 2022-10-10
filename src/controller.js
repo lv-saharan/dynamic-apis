@@ -90,9 +90,10 @@ class Controller {
    */
   async put(id, data) {
     if (data == undefined) {
-      throw new Error('need data argument')
+      data = id
+      id = null
     }
-    const config = { url: `${this.controllerURL}/${id}`, data, headers: this.headers }
+    const config = { url: id == null ? this.controllerURL : `${this.controllerURL}/${id}`, data, headers: this.headers }
     this.beforeSends.forEach(handler => {
       handler(config)
     })
@@ -110,9 +111,10 @@ class Controller {
    */
   async patch(id, data) {
     if (data == undefined) {
-      throw new Error('need data argument')
+      data = id
+      id = null
     }
-    const config = { url: `${this.controllerURL}/${id}`, data, headers: this.headers }
+    const config = { url: id == null ? this.controllerURL : `${this.controllerURL}/${id}`, data, headers: this.headers }
     this.beforeSends.forEach(handler => {
       handler(config)
     })
