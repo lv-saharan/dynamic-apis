@@ -56,6 +56,9 @@ let posts = await postCtrler.get(1, 2, 3);
 let posts = await postCtrler.get({ author: "saharan" });
 //fetch   :GET  http://127.0.0.1:3000/posts?author=saharan
 
+let posts = await postCtrler.get({ author: ["saharan","you","others" });
+//fetch   :GET  http://127.0.0.1:3000/posts?author=saharan&author=you&author=others
+
 let posts = await postCtrler.get({ user: { author: "saharan" } });
 //fetch   :GET  http://127.0.0.1:3000/posts?user.author=saharan
 ```
