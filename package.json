@@ -1,6 +1,6 @@
 {
   "name": "dynamic-apis",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "dynamic apis ,use proxy to create restful controller.",
   "main": "src/index.js",
   "type": "module",

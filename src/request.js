@@ -14,7 +14,12 @@ export const createHeaders = (headers = {}) => {
 const buildParams = (searchParams, parentKey = "", params = {}) => {
   for (let key in params) {
     const value = params[key]
-    if (value === null || typeof value !== "object") {
+    if (value instanceof Array) {
+      for (let v of value) {
+        searchParams.append(`${parentKey}${key}`, v)
+      }
+      continue;
+    } else if (value === null || typeof value !== "object") {
       searchParams.set(`${parentKey}${key}`, value)
       continue;
     }
