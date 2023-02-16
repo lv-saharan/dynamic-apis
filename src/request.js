@@ -36,11 +36,16 @@ const buildRequest = (method, url, data, headers) => {
     url = buildURL(url, data);
     data = null;
   }
-
+  headers = createHeaders(headers)
+  if (data instanceof FormData) {
+    headers.delete("Content-Type")
+  } else {
+    data = data != null ? JSON.stringify(data) : null
+  }
   return new Request(url, {
     method,
-    headers: createHeaders(headers),
-    body: data != null ? JSON.stringify(data) : null,
+    headers,
+    body: data
   });
 }
 
