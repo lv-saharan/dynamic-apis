@@ -1,53 +1,53 @@
 export const createHeaders = (headers = {}) => {
-  headers = (typeof headers == "function" ? headers() : headers)
+  headers = typeof headers == "function" ? headers() : headers;
   for (let p in headers) {
-    const value = headers[p]
+    const value = headers[p];
     if (typeof value === "function") {
-      headers[p] = value()
+      headers[p] = value();
     }
   }
   return new Headers({
     "Content-Type": "application/json",
-    ...headers
+    ...headers,
   });
-}
+};
 const buildParams = (searchParams, parentKey = "", params = {}) => {
   for (let key in params) {
-    const value = params[key]
+    const value = params[key];
     if (value instanceof Array) {
       for (let v of value) {
-        searchParams.append(`${parentKey}${key}`, v)
+        searchParams.append(`${parentKey}${key}`, v);
       }
       continue;
     } else if (value === null || typeof value !== "object") {
-      searchParams.set(`${parentKey}${key}`, value)
+      searchParams.set(`${parentKey}${key}`, value);
       continue;
     }
-    buildParams(searchParams, `${parentKey}${key}.`, value)
+    buildParams(searchParams, `${parentKey}${key}.`, value);
   }
-}
+};
 export const buildURL = (url, params = {}) => {
-  const reqURL = new URL(url)
-  buildParams(reqURL.searchParams, "", params)
+  const reqURL = new URL(url);
+  buildParams(reqURL.searchParams, "", params);
   return reqURL.href;
-}
+};
 const buildRequest = (method, url, data, headers) => {
   if (method == "GET" || method == "DELETE") {
     url = buildURL(url, data);
     data = null;
   }
-  headers = createHeaders(headers)
+  headers = createHeaders(headers);
   if (data instanceof FormData) {
-    headers.delete("Content-Type")
+    headers.delete("Content-Type");
   } else {
-    data = data != null ? JSON.stringify(data) : null
+    data = data != null ? JSON.stringify(data) : null;
   }
   return new Request(url, {
     method,
     headers,
-    body: data
+    body: data,
   });
-}
+};
 
 export const processRequest = async (method, url, data, headers) => {
   let req = buildRequest(method, url, data, headers ?? {});
@@ -65,7 +65,7 @@ export const processRequest = async (method, url, data, headers) => {
       window.dispatchEvent(errorEvent);
       return new Error({
         status: rsp.status,
-        statusText: rsp.statusText
+        statusText: rsp.statusText,
       });
     }
     try {
