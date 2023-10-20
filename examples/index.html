@@ -19,6 +19,7 @@
         const postCtrler = createController("posts", baseURL, () => {
             return { "some-header": "header-value", "count-header": count++ };
         });
+        window.postCtrler=postCtrler;
         const $result = document.querySelector("#result")
         document.querySelector("#getPost").addEventListener("click", async (evt) => {
             let posts = await postCtrler.get({
@@ -39,10 +40,7 @@
         })
         document.querySelector("#updatePost").addEventListener("click", async (evt) => {
             //live server will refresh....
-            $result.value = JSON.stringify(await postCtrler.update(2, {
-                "title": "！！！dynamic api",
-                "author": "！！！saharan"
-            }))
+            $result.value = JSON.stringify(await postCtrler.update(2 ))
         })
 
         document.querySelector("#addPost2comments").addEventListener("click", async (evt) => {

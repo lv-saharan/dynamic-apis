@@ -24,10 +24,11 @@ const postCtrler = createController("posts", baseURL, {
 //dynamic header
 let count = 0;
 const postCtrler = createController("posts", baseURL, () => {
-  return { "some-header": "header-value", 
-           "count-header": count++,
-           "AuthToken":getToken()
-         };
+  return {
+    "some-header": "header-value",
+    "count-header": count++,
+    AuthToken: getToken(),
+  };
 });
 ```
 
@@ -127,4 +128,40 @@ const addResult = await postCtrler.id(2).comments.add({
 const result = await someCtrler.path("getUser").get(userId);
 
 //fetch :GET http://127.0.0.1:3000/some.../getUser/userId
+```
+
+# New Features
+
+# ActionsMap As A Arg
+
+```javascript
+const postCtrler = createController(
+  "posts",
+  baseURL,
+  {
+    "some-header": "header-value",
+  },
+  (handler) => {}, //beforeSends   do something before send fetch request
+  (handler) => {}, //afterReceives do something after receive data from respose
+  { //actionsMap somthing.get() == something.fetch()  
+    get: "fetch",
+    post: ["add"],
+    put: ["update"],
+    patch: ["modify"],
+    delete: ["del", "remove"],
+  },
+  ["get","add","update","modify"] //parseActions, getSomething =>fetch:GET  something 
+);
+```
+
+## Every Properties Can Use As A Function
+
+```javascript
+const result = await postCtrler(2).comments.get();
+//fetch :GET  http://127.0.0.1:3000/posts/1/comments
+//  postCtrler.path(2).comments.get() also work
+//  postCtrler.id(2).comments.get();
+
+const result = await postCtrler(2).comments(1).get();
+//fetch :GET  http://127.0.0.1:3000/posts/1/comments/1
 ```

@@ -1,4 +1,19 @@
 import request from "./request.js";
+const ParseActions = [
+  "get",
+  "post",
+  "add",
+  "update",
+  "put",
+  "patch",
+  "modify",
+  "delete",
+  "del",
+];
+const ParseActionsRegExp = new RegExp(
+  `^(?<action>${ParseActions.join("|")})(?<name>\\w+)`,
+  "i"
+);
 
 class Controller {
   #tableName = "";
@@ -6,7 +21,24 @@ class Controller {
   #headers = {};
   #beforeSends = [];
   #afterReceives = [];
-  constructor(name, baseUrl, headers, beforeSends, afterReceives) {
+  #actionsMap = {
+    get: true,
+    post: "add",
+    put: "update",
+    patch: "modify",
+    delete: "del",
+  };
+  #parseActionsRegExp = ParseActionsRegExp;
+
+  constructor(
+    name,
+    baseUrl,
+    headers,
+    beforeSends,
+    afterReceives,
+    actionsMap,
+    parseActions
+  ) {
     baseUrl = baseUrl ?? location.href;
     name = name + "";
     this.#headers = headers ?? {};
@@ -17,6 +49,32 @@ class Controller {
     this.#tableName = name;
     if (beforeSends) this.#beforeSends = beforeSends;
     if (afterReceives) this.#afterReceives = afterReceives;
+
+    this.#actionsMap = actionsMap ?? this.#actionsMap;
+
+    if (parseActions instanceof Array) {
+      this.#parseActionsRegExp = new RegExp(
+        `^(?<action>${parseActions.join("|")})(?<name>\\w+)`,
+        "i"
+      );
+    }
+
+    for (let key in this.#actionsMap) {
+      const val = this.#actionsMap[key];
+      if (typeof key !== "string") {
+        continue;
+      }
+      if (typeof val === "string" && this[val] === undefined) {
+        this[val] = this[key];
+      }
+      if (val instanceof Array && val.length) {
+        for (let action of val) {
+          if (typeof action === "string" && this[action] === undefined) {
+            this[action] = this[key];
+          }
+        }
+      }
+    }
   }
   get headers() {
     return this.#headers;
@@ -29,6 +87,12 @@ class Controller {
   }
   get afterReceives() {
     return this.#afterReceives;
+  }
+  get actionsMap() {
+    return this.#actionsMap;
+  }
+  get parseActionsRegExp() {
+    return this.#parseActionsRegExp;
   }
   id(id) {
     return createController(
@@ -102,7 +166,7 @@ class Controller {
    * @param {*} data
    */
   async put(id, data) {
-    if (data == undefined) {
+    if (data == undefined && typeof id === "object") {
       data = id;
       id = null;
     }
@@ -127,7 +191,7 @@ class Controller {
    * @param {*} data
    */
   async patch(id, data) {
-    if (data == undefined) {
+    if (data == undefined && typeof id === "object") {
       data = id;
       id = null;
     }
@@ -175,53 +239,98 @@ class Controller {
     });
     return result;
   }
-
-  add = this.post;
-  update = this.put;
-  modify = this.patch;
-  del = this.delete;
 }
 const handler = {
   get(target, property, receiver) {
-    if (property in target) {
-      return target[property];
+    const controller = target.$controller;
+    if (property in controller) {
+      return controller[property];
     }
-    let match =
-      /^(?<action>get|add|post|update|put|patch|modify|del|delete)(?<name>\w+)/i.exec(
-        property
-      );
+    let match = controller.parseActionsRegExp.exec(property);
+
+    let $action = false;
     if (match) {
       let [first, ...rest] = match.groups.name;
       let name = [first.toLowerCase(), ...rest].join("");
-      let controller = new Controller(
-        name,
-        target.controllerURL + "/",
-        target.headers,
-        target.beforeSends,
-        target.afterReceives
-      );
-      return controller[match.groups.action].bind(controller);
+      property = name;
+      $action = match.groups.action;
     }
+
     return createController(
       property,
-      target.controllerURL + "/",
-      target.headers,
-      target.beforeSends,
-      target.afterReceives
+      controller.controllerURL + "/",
+      controller.headers,
+      controller.beforeSends,
+      controller.afterReceives,
+      controller.actionsMap,
+      controller.parseActions,
+      $action
+    );
+  },
+  apply(target, thisArg, argumentsList) {
+    const controller = target.$controller;
+    const action = target.$action;
+    if (action) {
+      return controller[action].apply(controller, argumentsList);
+    }
+    if (argumentsList.length === 0) return new Proxy(target, handler);
+    const [param] = argumentsList;
+
+    return createController(
+      param,
+      controller.controllerURL + "/",
+      controller.headers,
+      controller.beforeSends,
+      controller.afterReceives,
+      controller.actionsMap,
+      controller.parseActions
     );
   },
 };
+/**
+ * 
+ * @param {*} name 
+ * @param {*} baseUrl 
+ * @param {*} headers 
+ * @param  {...any} options 
+ * [
+
+ * beforeSends
+ * afterReceives
+ *  * actionsMap:{
+ * 
+ *    get:true,
+      post:"add",
+      put:"update",
+      patch:"modify",
+      delete:["del","remove",false] //false mean dont parse delSomething to something.del()
+ * }
+    parseAction:["get","add","update"...]
+ * ]
+ * @returns 
+ */
 export const createController = (
   name,
   baseUrl,
   headers,
   beforeSends,
-  afterReceives
+  afterReceives,
+  actionsMap,
+  parseActions,
+  $action
 ) => {
-  return new Proxy(
-    new Controller(name, baseUrl, headers, beforeSends, afterReceives),
-    handler
+  const func = () => {};
+  func.$action = $action;
+  func.$controller = new Controller(
+    name,
+    baseUrl,
+    headers,
+    beforeSends,
+    afterReceives,
+    actionsMap,
+    parseActions
   );
+  return new Proxy(func, handler);
 };
 
 export default {
