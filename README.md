@@ -154,7 +154,7 @@ const postCtrler = createController(
 );
 ```
 
-## Every Properties Can Use As A Function
+## Every Propertie Can Use As A Function
 
 ```javascript
 const result = await postCtrler(2).comments.get();
