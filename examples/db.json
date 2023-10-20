@@ -79,6 +79,11 @@
       "title": "dynamic api",
       "author": "saharan",
       "id": 17
+    },
+    {
+      "title": "dynamic api",
+      "author": "saharan",
+      "id": 18
     }
   ],
   "comments": [
@@ -96,6 +101,21 @@
       "body": "some comment!!!",
       "postId": "2",
       "id": 3
+    },
+    {
+      "body": "some comment!!!",
+      "postId": "2",
+      "id": 4
+    },
+    {
+      "body": "some comment!!!",
+      "postId": "2",
+      "id": 5
+    },
+    {
+      "body": "some comment!!!",
+      "postId": "2",
+      "id": 6
     }
   ],
   "profile": {
