@@ -148,12 +148,22 @@ class Controller {
    * 新增
    * @param {*} data
    */
-  async post(data) {
-    const config = { url: this.controllerURL, data, headers: this.headers };
+  async post(data, params) {
+    const config = {
+      url: this.controllerURL,
+      data,
+      headers: this.headers,
+      params,
+    };
     this.beforeSends.forEach((handler) => {
       handler(config);
     });
-    const result = await request.post(config.url, config.data, config.headers);
+    const result = await request.post(
+      config.url,
+      config.data,
+      config.headers,
+      config.params
+    );
     this.afterReceives.forEach((handler) => {
       handler(result);
     });
@@ -165,7 +175,7 @@ class Controller {
    * @param {*} id
    * @param {*} data
    */
-  async put(id, data) {
+  async put(id, data, params) {
     if (data == undefined && typeof id === "object") {
       data = id;
       id = null;
@@ -174,11 +184,17 @@ class Controller {
       url: id == null ? this.controllerURL : `${this.controllerURL}/${id}`,
       data,
       headers: this.headers,
+      params,
     };
     this.beforeSends.forEach((handler) => {
       handler(config);
     });
-    const result = await request.put(config.url, config.data, config.headers);
+    const result = await request.put(
+      config.url,
+      config.data,
+      config.headers,
+      config.params
+    );
     this.afterReceives.forEach((handler) => {
       handler(result);
     });
@@ -190,7 +206,7 @@ class Controller {
    * @param {*} id
    * @param {*} data
    */
-  async patch(id, data) {
+  async patch(id, data, params) {
     if (data == undefined && typeof id === "object") {
       data = id;
       id = null;
@@ -199,11 +215,17 @@ class Controller {
       url: id == null ? this.controllerURL : `${this.controllerURL}/${id}`,
       data,
       headers: this.headers,
+      params,
     };
     this.beforeSends.forEach((handler) => {
       handler(config);
     });
-    const result = await request.patch(config.url, config.data, config.headers);
+    const result = await request.patch(
+      config.url,
+      config.data,
+      config.headers,
+      config.params
+    );
     this.afterReceives.forEach((handler) => {
       handler(result);
     });

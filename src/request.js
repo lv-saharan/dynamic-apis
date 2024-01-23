@@ -31,10 +31,12 @@ export const buildURL = (url, params = {}) => {
   buildParams(reqURL.searchParams, "", params);
   return reqURL.href;
 };
-const buildRequest = (method, url, data, headers) => {
+const buildRequest = (method, url, data, headers, params) => {
   if (method == "GET" || method == "DELETE") {
     url = buildURL(url, data);
     data = null;
+  } else {
+    url = buildURL(url, params);
   }
   headers = createHeaders(headers);
   if (data instanceof FormData) {
@@ -49,8 +51,8 @@ const buildRequest = (method, url, data, headers) => {
   });
 };
 
-export const processRequest = async (method, url, data, headers) => {
-  let req = buildRequest(method, url, data, headers ?? {});
+export const processRequest = async (method, url, data, headers, params) => {
+  let req = buildRequest(method, url, data, headers ?? {}, params);
   return fetch(req).then((rsp) => {
     if (!rsp.ok) {
       let errorEvent = new CustomEvent("fetcherror", {
@@ -79,17 +81,17 @@ export const request = {
   async get(url, params, headers) {
     return processRequest("GET", url, params, headers);
   },
-  async post(url, data, headers) {
-    return processRequest("POST", url, data, headers);
+  async post(url, data, headers, params) {
+    return processRequest("POST", url, data, headers, params);
   },
-  async put(url, data, headers) {
-    return processRequest("PUT", url, data, headers);
+  async put(url, data, headers, params) {
+    return processRequest("PUT", url, data, headers, params);
   },
   async patch(url, data, headers) {
     return processRequest("PATCH", url, data, headers);
   },
-  async delete(url, data, headers) {
-    return processRequest("DELETE", url, data, headers);
+  async delete(url, data, headers, params) {
+    return processRequest("DELETE", url, data, headers, params);
   },
 };
 
