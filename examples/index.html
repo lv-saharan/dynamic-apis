@@ -42,7 +42,7 @@
             $result.value = JSON.stringify(await postCtrler.add({
                 "title": "dynamic api",
                 "author": "saharan"
-            }))
+            }, { pageNumber: 1, pageSize: 10 }))
         })
         document.querySelector("#delPost").addEventListener("click", async (evt) => {
             //live server will refresh....
@@ -57,7 +57,7 @@
             $result.value = JSON.stringify(await postCtrler.update(2, {
                 "title": "！！！dynamic api",
                 "author": "！！！saharan"
-            }))
+            }, { pageNumber: 1, pageSize: 10 }))
         })
 
         document.querySelector("#addPost2comments").addEventListener("click", async (evt) => {
@@ -67,7 +67,7 @@
             $result.value = JSON.stringify(await postCtrler.id(2).comments.add({
                 "body": "some comment!!!",
                 "postId": 2
-            }))
+            }, { pageNumber: 1, pageSize: 10 }))
         })
 
         document.querySelector("#getPost2comments").addEventListener("click", async (evt) => {
@@ -87,7 +87,7 @@
 
     <button id="delPost">del a post</button>
 
-    <button id="getPost2comments" >GET /posts/2/comments</button>
+    <button id="getPost2comments">GET /posts/2/comments</button>
 
     <button id="addPost2comments">ADD /posts/2/comments</button>
     <textarea id="result"></textarea>
