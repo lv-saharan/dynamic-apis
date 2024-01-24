@@ -1,8 +1,9 @@
 import request from "./request.js";
-import { createController } from "./controller.js";
+import { createController, Controller } from "./controller.js";
 export default {
   request,
   createController,
+  Controller,
 };
 
-export { request, createController };
+export { request, createController, Controller };

@@ -15,7 +15,7 @@ const ParseActionsRegExp = new RegExp(
   "i"
 );
 
-class Controller {
+export class Controller {
   #tableName = "";
   #controllerURL = "";
   #headers = {};
