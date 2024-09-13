@@ -13,17 +13,17 @@
         }
     </style>
     <script type="module">
-        import { createController } from '../src/index.js'
+        import { createController } from '../dist/index.js'
         const baseURL = 'http://localhost:3000/'
         let count = 0;
-        const postCtrler = createController("posts", baseURL, () => {
+        const apiPost = createController("posts", baseURL, () => {
             return { "some-header": "header-value", "count-header": count++ };
         });
         const $result = document.querySelector("#result")
         document.querySelector("#getPost").addEventListener("click", async (evt) => {
             evt.preventDefault();
 
-            let posts = await postCtrler.get({
+            let posts = await apiPost.get({
                 id: [5, 8, 10]
             })
             $result.value = JSON.stringify(posts)
@@ -31,7 +31,7 @@
         document.querySelector("#getPost2").addEventListener("click", async (evt) => {
             evt.preventDefault();
 
-            let posts = await postCtrler(2).getComments();
+            let posts = await apiPost(2).getComments();
 
             $result.value = JSON.stringify(posts)
         })
@@ -39,7 +39,7 @@
             //live server will refresh....
             evt.preventDefault();
 
-            $result.value = JSON.stringify(await postCtrler.add({
+            $result.value = JSON.stringify(await apiPost.add({
                 "title": "dynamic api",
                 "author": "saharan"
             }, { pageNumber: 1, pageSize: 10 }))
@@ -48,13 +48,13 @@
             //live server will refresh....
             evt.preventDefault();
 
-            $result.value = JSON.stringify(await postCtrler.del(1))
+            $result.value = JSON.stringify(await apiPost.del(1))
         })
         document.querySelector("#updatePost").addEventListener("click", async (evt) => {
             //live server will refresh....
             evt.preventDefault();
 
-            $result.value = JSON.stringify(await postCtrler.update(2, {
+            $result.value = JSON.stringify(await apiPost.update(2, {
                 "title": "！！！dynamic api",
                 "author": "！！！saharan"
             }, { pageNumber: 1, pageSize: 10 }))
@@ -64,7 +64,7 @@
             //live server will refresh....
             evt.preventDefault();
 
-            $result.value = JSON.stringify(await postCtrler.id(2).comments.add({
+            $result.value = JSON.stringify(await apiPost.id(2).comments.add({
                 "body": "some comment!!!",
                 "postId": 2
             }, { pageNumber: 1, pageSize: 10 }))
@@ -73,7 +73,7 @@
         document.querySelector("#getPost2comments").addEventListener("click", async (evt) => {
             //live server will refresh....
             evt.preventDefault();
-            $result.value = JSON.stringify(await postCtrler.id(2).comments.get())
+            $result.value = JSON.stringify(await apiPost.id(2).comments.get())
         })
     </script>
 </head>

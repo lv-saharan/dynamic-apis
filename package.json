@@ -2,9 +2,12 @@
   "name": "dynamic-apis",
   "version": "1.2.2",
   "description": "dynamic apis ,use proxy to create restful controller.",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/types/index.d.ts",
   "type": "module",
   "scripts": {
+    "build": "esbuild src/index.ts   --sourcemap --bundle --format=esm --outfile=dist/index.js",
+    "publish": "tsc & npm publish",
     "db": "json-server --watch examples/db.json"
   },
   "repository": {
@@ -25,6 +28,7 @@
   },
   "homepage": "https://github.com/lv-saharan/dynamic-apis#readme",
   "devDependencies": {
+    "esbuild": "^0.23.1",
     "json-server": "^0.17.0"
   }
 }

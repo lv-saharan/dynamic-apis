@@ -1,4 +1,12 @@
-import request from "./request.js";
+import {
+  ApiHeaders,
+  BeforeSendConfig,
+  BeforeSendHandler,
+  ApiProxy,
+  ApiParams,
+  ApiController,
+} from "./definitions";
+import request from "./request";
 const ParseActions = [
   "get",
   "post",
@@ -15,13 +23,15 @@ const ParseActionsRegExp = new RegExp(
   "i"
 );
 
-export class Controller {
+export class Controller implements ApiController {
+  [key: string]: any;
   #tableName = "";
   #controllerURL = "";
-  #headers = {};
-  #beforeSends = [];
-  #afterReceives = [];
-  #actionsMap = {
+  #headers: ApiHeaders = {};
+  #beforeSends: Array<BeforeSendHandler> = [];
+
+  #afterReceives: Array<(result: any) => any> = [];
+  #actionsMap: Record<string, boolean | string | string[]> = {
     get: true,
     post: "add",
     put: "update",
@@ -31,20 +41,20 @@ export class Controller {
   #parseActionsRegExp = ParseActionsRegExp;
 
   constructor(
-    name,
-    baseUrl,
-    headers,
-    beforeSends,
-    afterReceives,
-    actionsMap,
-    parseActions
+    name: string,
+    baseUrl: string,
+    headers: ApiHeaders = {},
+    beforeSends: Array<BeforeSendHandler> = [],
+    afterReceives: Array<(result: any) => any> = [],
+    actionsMap?: Record<string, string | boolean | string[]>,
+    parseActions?: Array<string>
   ) {
     baseUrl = baseUrl ?? location.href;
     name = name + "";
     this.#headers = headers ?? {};
     this.#controllerURL = new URL(name, baseUrl).href;
     if (name.startsWith("/")) {
-      name = name.substr(1);
+      name = name.substring(1);
     }
     this.#tableName = name;
     if (beforeSends) this.#beforeSends = beforeSends;
@@ -94,29 +104,29 @@ export class Controller {
   get parseActionsRegExp() {
     return this.#parseActionsRegExp;
   }
-  id(id) {
+  id(id: string | number) {
     return createController(
-      id,
+      id as string,
       this.controllerURL + "/",
       this.headers,
       this.beforeSends,
       this.afterReceives
     );
   }
-  path(path) {
+  path(path: string | number) {
     return createController(
-      path,
+      path as string,
       this.controllerURL + "/",
       this.headers,
       this.beforeSends,
       this.afterReceives
     );
   }
-  beforeSend(handler) {
+  beforeSend(handler: BeforeSendHandler) {
     if (!handler) throw new Error("need a handler");
     this.beforeSends.push(handler);
   }
-  afterReceive(handler) {
+  afterReceive(handler: (result: any) => any) {
     if (!handler) throw new Error("need a handler");
     this.afterReceives.push(handler);
   }
@@ -124,21 +134,26 @@ export class Controller {
    * id可以是一个id，或者为空，或者一个查询
    * @param {*} id
    */
-  async get(id) {
+  async get(id?: string | number | ApiParams | Array<string | number>) {
     let url = `${this.controllerURL}`;
-    let data = null;
+    let params: ApiParams | undefined = undefined;
     if (id instanceof Array) {
       url = `${this.controllerURL}/${id.join(",")}`;
     } else if (typeof id == "object") {
-      data = id;
+      params = id;
     } else if (arguments.length) {
       url = `${this.controllerURL}/${[...arguments].join(",")}`;
     }
-    const config = { url, data, headers: this.headers };
+    const config: BeforeSendConfig = {
+      url,
+      method: "GET",
+      params,
+      headers: this.headers,
+    };
     this.beforeSends.forEach((handler) => {
       handler(config);
     });
-    const result = await request.get(config.url, config.data, config.headers);
+    const result = await request.get(config.url, config.params, config.headers);
     this.afterReceives.forEach((handler) => {
       handler(result);
     });
@@ -148,21 +163,22 @@ export class Controller {
    * 新增
    * @param {*} data
    */
-  async post(data, params) {
-    const config = {
+  async post(data?: any, params?: ApiParams) {
+    const config: BeforeSendConfig = {
       url: this.controllerURL,
       data,
       headers: this.headers,
       params,
+      method: "POST",
     };
     this.beforeSends.forEach((handler) => {
       handler(config);
     });
     const result = await request.post(
       config.url,
-      config.data,
+      config.params,
       config.headers,
-      config.params
+      config.data
     );
     this.afterReceives.forEach((handler) => {
       handler(result);
@@ -175,25 +191,30 @@ export class Controller {
    * @param {*} id
    * @param {*} data
    */
-  async put(id, data, params) {
+  async put(
+    id: string | number | object | undefined,
+    data?: any,
+    params?: ApiParams
+  ) {
     if (data == undefined && typeof id === "object") {
       data = id;
-      id = null;
+      id = undefined;
     }
-    const config = {
-      url: id == null ? this.controllerURL : `${this.controllerURL}/${id}`,
+    const config: BeforeSendConfig = {
+      url: id == undefined ? this.controllerURL : `${this.controllerURL}/${id}`,
       data,
       headers: this.headers,
       params,
+      method: "PUT",
     };
     this.beforeSends.forEach((handler) => {
       handler(config);
     });
     const result = await request.put(
       config.url,
-      config.data,
+      config.params,
       config.headers,
-      config.params
+      config.data
     );
     this.afterReceives.forEach((handler) => {
       handler(result);
@@ -206,25 +227,30 @@ export class Controller {
    * @param {*} id
    * @param {*} data
    */
-  async patch(id, data, params) {
+  async patch(
+    id: string | number | object | undefined,
+    data?: any,
+    params?: ApiParams
+  ) {
     if (data == undefined && typeof id === "object") {
       data = id;
-      id = null;
+      id = undefined;
     }
-    const config = {
-      url: id == null ? this.controllerURL : `${this.controllerURL}/${id}`,
+    const config: BeforeSendConfig = {
+      url: id == undefined ? this.controllerURL : `${this.controllerURL}/${id}`,
       data,
       headers: this.headers,
       params,
+      method: "PATCH",
     };
     this.beforeSends.forEach((handler) => {
       handler(config);
     });
     const result = await request.patch(
       config.url,
-      config.data,
+      config.params,
       config.headers,
-      config.params
+      config.data
     );
     this.afterReceives.forEach((handler) => {
       handler(result);
@@ -236,24 +262,31 @@ export class Controller {
    * id可以是一个id，或者一个数组，或者一个查询
    * @param {*} id
    */
-  async delete(id) {
+  async delete(
+    id: string | number | undefined | Array<string | number> | ApiParams
+  ) {
     let url = `${this.controllerURL}`;
-    let data = null;
+    let params: ApiParams | undefined = undefined;
     if (id instanceof Array) {
       url = `${this.controllerURL}/${id.join(",")}`;
     } else if (typeof id == "object") {
-      data = id;
+      params = id;
     } else if (arguments.length) {
       url = `${this.controllerURL}/${[...arguments].join(",")}`;
     }
 
-    const config = { url, data, headers: this.headers };
+    const config: BeforeSendConfig = {
+      method: "DELETE",
+      url,
+      params,
+      headers: this.headers,
+    };
     this.beforeSends.forEach((handler) => {
       handler(config);
     });
     const result = await request.delete(
       config.url,
-      config.data,
+      config.params,
       config.headers
     );
     this.afterReceives.forEach((handler) => {
@@ -263,15 +296,22 @@ export class Controller {
   }
 }
 const handler = {
-  get(target, property, receiver) {
+  get(
+    target: {
+      $action: string | undefined;
+      $controller: Controller;
+    },
+    property: string,
+    receiver: any
+  ) {
     const controller = target.$controller;
     if (property in controller) {
       return controller[property];
     }
     let match = controller.parseActionsRegExp.exec(property);
 
-    let $action = false;
-    if (match) {
+    let $action: string | undefined = undefined;
+    if (match && match.groups) {
       let [first, ...rest] = match.groups.name;
       let name = [first.toLowerCase(), ...rest].join("");
       property = name;
@@ -289,7 +329,14 @@ const handler = {
       $action
     );
   },
-  apply(target, thisArg, argumentsList) {
+  apply(
+    target: {
+      $action: string | undefined;
+      $controller: Controller;
+    },
+    thisArg: any,
+    argumentsList: any[]
+  ): any {
     const controller = target.$controller;
     const action = target.$action;
     if (action) {
@@ -331,16 +378,16 @@ const handler = {
  * ]
  * @returns 
  */
-export const createController = (
-  name,
-  baseUrl,
-  headers,
-  beforeSends,
-  afterReceives,
-  actionsMap,
-  parseActions,
-  $action
-) => {
+export function createController(
+  name: string,
+  baseUrl: string,
+  headers: ApiHeaders = {},
+  beforeSends: BeforeSendHandler[] = [],
+  afterReceives: Array<(result: any) => any> = [],
+  actionsMap?: Record<string, string | boolean | string[]>,
+  parseActions?: Array<string>,
+  $action?: string
+): ApiProxy {
   const func = () => {};
   func.$action = $action;
   func.$controller = new Controller(
@@ -352,8 +399,8 @@ export const createController = (
     actionsMap,
     parseActions
   );
-  return new Proxy(func, handler);
-};
+  return new Proxy(func, handler) as unknown as ApiProxy;
+}
 
 export default {
   create: createController,
