@@ -34,12 +34,23 @@ export interface ApiController {
      */
     delete<T = any>(id: string | number | undefined | Array<string | number> | ApiParams): Promise<T>;
 }
-type ApiFunction = <T>(arg?: any) => ApiProxy & (T extends string ? {
-    [K in T]: ApiProxy;
-} : T extends Record<string, any> ? {
-    [K in keyof T]: ApiProxy;
-} : {});
+type ApiFunction = (arg?: any) => ApiProxy;
+type GetKey = `get${string}`;
+type PostKey = `${"post" | "add"}${string}`;
+type PutKey = `${"put" | "update"}${string}`;
+type PatchKey = `${"patch" | "modify"}${string}`;
+type DeleteKey = `${"delete" | "del"}${string}`;
 export type ApiProxy = ApiController & {
+    [K in GetKey]: ApiController["get"];
+} & {
+    [K in PostKey]: ApiController["post"];
+} & {
+    [K in PutKey]: ApiController["put"];
+} & {
+    [K in PatchKey]: ApiController["patch"];
+} & {
+    [K in DeleteKey]: ApiController["delete"];
+} & {
     [K: string]: ApiProxy;
 } & ApiFunction;
 export {};

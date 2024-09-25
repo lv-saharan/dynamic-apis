@@ -2,6 +2,7 @@ import { Controller } from "./controller";
 
 export type ApiHeaders = Record<string, string | (() => string)>;
 export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
 export interface ApiParams {
   [key: string]: string | string[] | null | number | ApiParams;
 }
@@ -64,17 +65,39 @@ export interface ApiController {
   ): Promise<T>;
 }
 
-type ApiFunction = <T>(arg?: any) => ApiProxy &
-  (T extends string
-    ? {
-        [K in T]: ApiProxy;
-      }
-    : T extends Record<string, any>
-    ? {
-        [K in keyof T]: ApiProxy;
-      }
-    : {});
+// type ApiFunction = <T>(arg?: any) => ApiProxy &
+//   (T extends string
+//     ? {
+//         [K in T]: ApiProxy;
+//       }
+//     : T extends Record<string, any>
+//     ? {
+//         [K in keyof T]: ApiProxy;
+//       }
+//     : {});
+type CamelCase<S extends string> = S extends Lowercase<S>
+  ? S extends `${infer F}_${infer RF}${infer R}`
+    ? `${F}${Uppercase<RF>}${CamelCase<R>}`
+    : S
+  : CamelCase<Lowercase<S>>;
+type ApiFunction = (arg?: any) => ApiProxy;
 
+
+type GetKey = `get${string}`;
+type PostKey = `${"post" | "add"}${string}`;
+type PutKey = `${"put" | "update"}${string}`;
+type PatchKey = `${"patch" | "modify"}${string}`;
+type DeleteKey = `${"delete" | "del"}${string}`;
 export type ApiProxy = ApiController & {
+  [K in GetKey]: ApiController["get"];
+} & {
+  [K in PostKey]: ApiController["post"];
+} & {
+  [K in PutKey]: ApiController["put"];
+} & {
+  [K in PatchKey]: ApiController["patch"];
+} & {
+  [K in DeleteKey]: ApiController["delete"];
+} & {
   [K: string]: ApiProxy;
 } & ApiFunction;
